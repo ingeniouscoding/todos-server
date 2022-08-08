@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
 
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateTodoDto } from './dto/create-todo.dto';
+
 @Injectable()
 export class TodoService {
-  private todos = [
-    {
-      content: 'Todo task 1',
-      isComplete: false,
-    },
-    {
-      content: 'Todo task 2',
-      isComplete: false,
-    },
-    {
-      content: 'Todo task 3',
-      isComplete: true,
-    },
-  ];
+  constructor(private readonly prisma: PrismaService) { }
 
-  getAll() {
-    return this.todos;
+  findAll() {
+    return this.prisma.todo.findMany();
+  }
+
+  async save(dto: CreateTodoDto) {
+    const todo = await this.prisma.todo
+      .create({
+        data: {
+          content: dto.content,
+        },
+      });
+    return todo;
   }
 }

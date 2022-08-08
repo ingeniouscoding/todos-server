@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 
+import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoService } from './todo.service';
 
 @Controller('todos')
@@ -8,6 +9,11 @@ export class TodoController {
 
   @Get()
   index() {
-    return this.todoService.getAll();
+    return this.todoService.findAll();
+  }
+
+  @Post()
+  store(@Body() dto: CreateTodoDto) {
+    return this.todoService.save(dto);
   }
 }
