@@ -29,7 +29,7 @@ export class TokenService {
     return tokens;
   }
 
-  async deleteToken(userPayload: JwtPayload) {
+  async deleteToken(userPayload: JwtPayload): Promise<void> {
     await this.prisma.refreshToken
       .deleteMany({
         where: {
@@ -39,7 +39,7 @@ export class TokenService {
       });
   }
 
-  async refresh(userPayload: JwtPayload) {
+  async refresh(userPayload: JwtPayload): Promise<JwtTokens | null> {
     const refreshToken = await this.prisma.refreshToken
       .findFirst({
         where: {

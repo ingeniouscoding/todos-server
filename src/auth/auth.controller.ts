@@ -14,7 +14,7 @@ import { AuthService } from './auth.service';
 import { UserPayload } from './decorators';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { PrismaExceptionFilter } from './filters';
-import { JwtPayload } from './interfaces';
+import { JwtPayload, JwtTokens } from './interfaces';
 import { TokenService } from './token.service';
 
 @Controller('auth')
@@ -25,8 +25,7 @@ export class AuthController {
   ) { }
 
   @Post('register')
-  @UseFilters(PrismaExceptionFilter)
-  async register(@Body() dto: CreateUserDto) {
+  async register(@Body() dto: CreateUserDto): Promise<JwtTokens> {
     const user = await this.authService.register(dto);
     const tokens = await this.tokenService.signUser(user);
     return tokens;
@@ -34,7 +33,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginUserDto) {
+  async login(@Body() dto: LoginUserDto): Promise<JwtTokens> {
     const user = await this.authService.login(dto);
     if (!user) {
       throw new ForbiddenException('Email or password is incorrect.');
@@ -46,14 +45,14 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard('refresh-jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
-  logout(@UserPayload() user: JwtPayload) {
-    this.tokenService.deleteToken(user);
+  logout(@UserPayload() user: JwtPayload): Promise<void> {
+    return this.tokenService.deleteToken(user);
   }
 
   @Post('token')
   @UseGuards(AuthGuard('refresh-jwt'))
   @HttpCode(HttpStatus.OK)
-  async refresh(@UserPayload() userPayload: JwtPayload) {
+  async refresh(@UserPayload() userPayload: JwtPayload): Promise<JwtTokens> {
     const tokens = await this.tokenService.refresh(userPayload);
 
     if (!tokens) {

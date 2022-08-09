@@ -9,15 +9,23 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     let error = {
       statusCode: 400,
-      message: 'Database error',
+      message: 'Database error.',
       error: 'Bad request'
     };
     switch (exception.code) {
       case 'P2002':
         error = {
           statusCode: 409,
-          message: `${exception.meta?.target} must be unique`,
+          message: `${exception.meta?.target} must be unique.`,
           error: 'Conflict',
+        };
+        break;
+      case 'P2025':
+        console.log(exception);
+        error = {
+          statusCode: 404,
+          message: `${exception.meta?.cause}`,
+          error: 'Not found',
         };
         break;
     }
