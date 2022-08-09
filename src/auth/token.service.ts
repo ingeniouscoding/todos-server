@@ -22,7 +22,7 @@ export class TokenService {
       .create({
         data: {
           userId: user.id,
-          token: tokens.refreshToken.split('.')[2],
+          token: tokens.refresh_token.split('.')[2],
         },
       });
 
@@ -47,7 +47,14 @@ export class TokenService {
           token: userPayload.refreshToken?.split('.')[2] ?? '',
         },
       });
+
     if (!refreshToken) {
+      await this.prisma.refreshToken
+        .deleteMany({
+          where: {
+            userId: userPayload.sub,
+          },
+        });
       return null;
     }
 
@@ -68,7 +75,7 @@ export class TokenService {
           id: refreshToken.id,
         },
         data: {
-          token: tokens.refreshToken.split('.')[2],
+          token: tokens.refresh_token.split('.')[2],
         },
       });
 
@@ -81,7 +88,7 @@ export class TokenService {
       email: user.email,
     };
 
-    const [accessToken, refreshToken] = await Promise.all([
+    const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload, {
         secret: this.config.get('ACCESS_TOKEN_SECRET'),
         expiresIn: '5m',
@@ -93,8 +100,8 @@ export class TokenService {
     ]);
 
     return {
-      accessToken,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 }

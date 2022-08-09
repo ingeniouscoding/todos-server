@@ -37,7 +37,7 @@ export class AuthController {
   async login(@Body() dto: LoginUserDto) {
     const user = await this.authService.login(dto);
     if (!user) {
-      throw new ForbiddenException('Email or password do not match');
+      throw new ForbiddenException('Email or password is incorrect.');
     }
     const tokens = await this.tokenService.signUser(user);
     return tokens;
@@ -50,14 +50,14 @@ export class AuthController {
     this.tokenService.deleteToken(user);
   }
 
-  @Post('refresh')
+  @Post('token')
   @UseGuards(AuthGuard('refresh-jwt'))
   @HttpCode(HttpStatus.OK)
   async refresh(@UserPayload() userPayload: JwtPayload) {
     const tokens = await this.tokenService.refresh(userPayload);
 
     if (!tokens) {
-      throw new ForbiddenException('Access denied. Try login.');
+      throw new ForbiddenException('Access denied. Try login again.');
     }
 
     return tokens;
