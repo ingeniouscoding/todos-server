@@ -6,14 +6,13 @@ import {
   HttpStatus,
   Post,
   UseFilters,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from './auth.service';
 import { UserPayload } from './decorators';
-import { CreateUserDto } from './dto';
-import { LoginUserDto } from './dto';
+import { CreateUserDto, LoginUserDto } from './dto';
 import { PrismaExceptionFilter } from './filters';
 import { JwtPayload } from './interfaces';
 import { TokenService } from './token.service';
@@ -49,5 +48,18 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@UserPayload() user: JwtPayload) {
     this.tokenService.deleteToken(user);
+  }
+
+  @Post('refresh')
+  @UseGuards(AuthGuard('refresh-jwt'))
+  @HttpCode(HttpStatus.OK)
+  async refresh(@UserPayload() userPayload: JwtPayload) {
+    const tokens = await this.tokenService.refresh(userPayload);
+
+    if (!tokens) {
+      throw new ForbiddenException('Access denied. Try login.');
+    }
+
+    return tokens;
   }
 }

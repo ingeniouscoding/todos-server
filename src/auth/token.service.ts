@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { JwtPayload } from './interfaces';
+import { JwtPayload, JwtTokens } from './interfaces';
 
 @Injectable()
 export class TokenService {
@@ -15,7 +15,67 @@ export class TokenService {
   ) { }
 
 
-  async signUser(user: User) {
+  async signUser(user: User): Promise<JwtTokens> {
+    const tokens = await this.generateTokens(user);
+
+    await this.prisma.refreshToken
+      .create({
+        data: {
+          userId: user.id,
+          token: tokens.refreshToken.split('.')[2],
+        },
+      });
+
+    return tokens;
+  }
+
+  async deleteToken(userPayload: JwtPayload) {
+    await this.prisma.refreshToken
+      .deleteMany({
+        where: {
+          userId: userPayload.sub,
+          token: userPayload.refreshToken?.split('.')[2],
+        },
+      });
+  }
+
+  async refresh(userPayload: JwtPayload) {
+    const refreshToken = await this.prisma.refreshToken
+      .findFirst({
+        where: {
+          userId: userPayload.sub,
+          token: userPayload.refreshToken?.split('.')[2] ?? '',
+        },
+      });
+    if (!refreshToken) {
+      return null;
+    }
+
+    const user = await this.prisma.user
+      .findUnique({
+        where: {
+          id: userPayload.sub,
+        },
+      });
+    if (!user) {
+      return null;
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.prisma.refreshToken
+      .update({
+        where: {
+          id: refreshToken.id,
+        },
+        data: {
+          token: tokens.refreshToken.split('.')[2],
+        },
+      });
+
+    return tokens;
+  }
+
+  private async generateTokens(user: User): Promise<JwtTokens> {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -32,27 +92,9 @@ export class TokenService {
       }),
     ]);
 
-    await this.prisma.refreshToken
-      .create({
-        data: {
-          userId: user.id,
-          token: refreshToken.split('.')[2],
-        },
-      });
-
     return {
       accessToken,
       refreshToken,
     };
-  }
-
-  async deleteToken(user: JwtPayload) {
-    await this.prisma.refreshToken
-      .deleteMany({
-        where: {
-          userId: user.sub,
-          token: user.refreshToken?.split('.')[2],
-        },
-      });
   }
 }
