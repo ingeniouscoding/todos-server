@@ -8,8 +8,13 @@ import { UpdateTodoDto, CreateTodoDto } from './dto';
 export class TodoService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async findAll(): Promise<Todo[]> {
-    const todos = await this.prisma.todo.findMany();
+  async findAll(userId: number): Promise<Todo[]> {
+    const todos = await this.prisma.todo
+      .findMany({
+        where: {
+          userId,
+        },
+      });
     return todos;
   }
 
@@ -23,11 +28,12 @@ export class TodoService {
     return todo;
   }
 
-  async save(dto: CreateTodoDto): Promise<Todo> {
+  async save(userId: number, dto: CreateTodoDto): Promise<Todo> {
     const todo = await this.prisma.todo
       .create({
         data: {
-          content: dto.content,
+          ...dto,
+          userId,
         },
       });
     return todo;

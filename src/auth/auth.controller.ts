@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseFilters,
   UseGuards
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -13,7 +12,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UserPayload } from './decorators';
 import { CreateUserDto, LoginUserDto } from './dto';
-import { PrismaExceptionFilter } from './filters';
 import { JwtPayload, JwtTokens } from './interfaces';
 import { TokenService } from './token.service';
 
@@ -52,8 +50,8 @@ export class AuthController {
   @Post('token')
   @UseGuards(AuthGuard('refresh-jwt'))
   @HttpCode(HttpStatus.OK)
-  async refresh(@UserPayload() userPayload: JwtPayload): Promise<JwtTokens> {
-    const tokens = await this.tokenService.refresh(userPayload);
+  async refresh(@UserPayload() user: JwtPayload): Promise<JwtTokens> {
+    const tokens = await this.tokenService.refresh(user);
 
     if (!tokens) {
       throw new ForbiddenException('Access denied. Try login again.');
