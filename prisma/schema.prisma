@@ -17,8 +17,8 @@ model User {
   updatedAt DateTime  @updatedAt
   daletedAt DateTime?
 
-  RefreshToken RefreshToken[]
-  Todo         Todo[]
+  refreshTokens RefreshToken[]
+  todos         TodoEntity[]
 
   @@map("users")
 }
@@ -32,8 +32,9 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model Todo {
+model TodoEntity {
   id         Int     @id @default(autoincrement())
+  guid       String  @unique
   content    String
   isComplete Boolean @default(false)
   user       User    @relation(fields: [userId], references: [id])
