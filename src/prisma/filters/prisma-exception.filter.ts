@@ -21,7 +21,6 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         };
         break;
       case 'P2025':
-        console.log(exception);
         error = {
           statusCode: 404,
           message: `${exception.meta?.cause}`,

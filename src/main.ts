@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
-import { PrismaExceptionFilter } from './auth/filters';
+import { PrismaExceptionFilter } from './prisma/filters';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
