@@ -14,6 +14,9 @@ export class AllTodosHandler implements IQueryHandler {
         where: {
           userId,
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
 
     return todos.map((t) => new TodoReadModel(
